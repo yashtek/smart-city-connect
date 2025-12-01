@@ -13,7 +13,9 @@ exports.createUser = async(req , res) =>{
             aadhar,
             occupation,
             address,
-            profileimage
+            profileimage,
+            latitude,
+            longitude
         } = req.body;
 
         const user = await User.findOne({$or: [{phone},{aadhar}]});
@@ -23,6 +25,12 @@ exports.createUser = async(req , res) =>{
                 success:false
             });
         }
+        const lat = Number(req.body.latitude);
+        const long = Number(req.body.longitude);
+
+        const isvalidlet = !isNaN(lat) && lat >=-90 && lat <= 90;
+        const isvalidlong = !isNaN(long) && long >=-180 && long <= 1800;
+       
 
         const newUser = new User({
             name,
@@ -32,7 +40,10 @@ exports.createUser = async(req , res) =>{
             aadhar,
             occupation,
             address,         // array
-            profileimage
+            profileimage,
+            latitude:isvalidlet ? lat:null,
+            longitude:isvalidlong?long:null
+           
         });
 
         await newUser.save();
@@ -89,6 +100,11 @@ exports.updateUser = async(req , res) =>{
                 success:false
             });
         }
+        const lat = Number(req.body.latitude);
+        const long = Number(req.body.longitude);
+
+        const isvalidlet = !isNaN(lat) && lat >= -90 && lat <=90;
+        const isValidLng = !isNaN(long) && long >= -180 && long <= 180;
 
         const updateuser = await User.findByIdAndUpdate(userId,
             {
@@ -100,7 +116,9 @@ exports.updateUser = async(req , res) =>{
                     aadhar:req.body.aadhar || user.aadhar,
                     occcupation:req.body.occcupation || user.occcupation,
                     address:Array.isArray(req.body.address)?req.body.address:user.address,
-                    profileimage:req.body.profileimage || user.profileimage
+                    profileimage:req.body.profileimage || user.profileimage,
+                    latitude:isvalidlet? lat:user.latitude,
+                    longitude:isValidLng?long:user.longitude
                 }
 
             },{new:true}
@@ -123,7 +141,30 @@ exports.updateUser = async(req , res) =>{
 
 
 exports.deleteUser = async(req , res) =>{
-     res.status(200).json({
-        message:"done"
-    })
-}
+    try{
+        const {userId} = req.query;
+        const user = await User.findById(userId);
+
+        if(!user){
+            return res.status(200).json({
+                message:"User not found",
+                success:false
+            });
+        }
+
+        await User.findByIdAndDelete(userId);
+
+         return res.status(200).json({
+            message: "User deleted successfully",
+            success: true
+        });
+
+    }catch(error){
+        return res.status(500).json({
+            message:"problem in delete",
+            success:false,
+            error:error.message
+        });
+    }
+    
+};

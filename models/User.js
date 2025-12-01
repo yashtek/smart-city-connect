@@ -42,6 +42,14 @@ const userSchema = mongoose.Schema({
             zipcode:{type:String,required:true},
         }],
         default:[]
+    },
+    latitude:{
+        type:Number,
+        default:null
+    },
+    longitude:{
+        type:Number,
+        default:null
     }
 
 },{timestamps:true});

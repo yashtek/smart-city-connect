@@ -25,3 +25,15 @@ exports.loginvalidation = (req,res,next) => {
     }
     next();
 }
+exports.logoutvalidation = (req,res,next) => {
+    const schema = Joi.object({
+        email:Joi.string().required()
+    });
+    const{error} = schema.validate(req.headers);
+    if(error){
+        return res.status(400).json({
+            message:"Token is required"
+        });
+    }
+    next();
+}
